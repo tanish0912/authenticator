@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./components/Login";
 import OTPApp from "./OTPApp";
+import StudentDetails from "./StudentDetails";
 
 function App() {
     const [user, setUser] = useState(null);
@@ -59,7 +60,13 @@ function App() {
                     }
                 />
             </Routes>
+            
+            <Routes>
+                <Route path="/student-details" element={<StudentDetails />} />
+            </Routes>
+        
         </Router>
+        
     );
 }
 
