@@ -8,3 +8,5 @@ firebase.js
 /node_modules
 data.csv
 
+.env
+
