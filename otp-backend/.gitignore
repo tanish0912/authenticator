@@ -1,0 +1,10 @@
+# Ignore serviceAccountKey.json
+serviceAccountKey.json
+
+# Ignore firebase.js
+firebase.js
+
+
+/node_modules
+data.csv
+
