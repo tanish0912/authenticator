@@ -14,7 +14,7 @@ function App() {
 
             if (email && sessionId) {
                 try {
-                    const response = await fetch("https://otp-app-backend-oufd.onrender.com/validate-session", {
+                    const response = await fetch("https://authenticator-zppp.onrender.com/validate-session", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ email, sessionId }),

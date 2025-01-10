@@ -22,7 +22,7 @@ const Login = ({ setUser }) => {
             
 
             // Validate roll number with backend
-            const response = await fetch("https://otp-app-backend-oufd.onrender.com/validate-rollno", {
+            const response = await fetch("https://authenticator-zppp.onrender.com/validate-rollno", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ rollNo }),
@@ -38,7 +38,7 @@ const Login = ({ setUser }) => {
             const sessionId = generateSessionId(); // Generate session ID
 
             // Call backend to create session
-            const sessionResponse = await fetch("https://otp-app-backend-oufd.onrender.com/login", {
+            const sessionResponse = await fetch("https://authenticator-zppp.onrender.com/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, sessionId }),

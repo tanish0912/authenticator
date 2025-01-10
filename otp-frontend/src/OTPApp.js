@@ -9,7 +9,7 @@ const OTPApp = ({ user, setUser }) => {
 
     const fetchUserData = async () => {
         try {
-            const response = await fetch("https://otp-app-backend-oufd.onrender.com/get-user-data", {
+            const response = await fetch("https://authenticator-zppp.onrender.com/get-user-data", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: user.email }),
@@ -32,7 +32,7 @@ const OTPApp = ({ user, setUser }) => {
             setOtp("Loading...");
             setStatus("");
 
-            const response = await fetch("https://otp-app-backend-oufd.onrender.com/otp");
+            const response = await fetch("https://authenticator-zppp.onrender.com/otp");
             const data = await response.json();
 
             const otpTimestamp = data.timestamp;
@@ -87,7 +87,7 @@ const OTPApp = ({ user, setUser }) => {
 
     const handleLogout = async () => {
         try {
-            await fetch("https://otp-app-backend-oufd.onrender.com/logout", {
+            await fetch("https://authenticator-zppp.onrender.com/logout", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: user.email }),
