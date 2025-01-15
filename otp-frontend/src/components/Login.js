@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { auth, provider, signInWithPopup } from "../firebase";
+import { login } from '../api';
 
 const Login = ({ setUser }) => {
     const navigate = useNavigate();
@@ -9,116 +10,41 @@ const Login = ({ setUser }) => {
         try {
             const result = await signInWithPopup(auth, provider);
             const email = result.user.email;
-
+    
             if (!email.endsWith("@sst.scaler.com")) {
                 alert("Access Denied: Only @sst.scaler.com emails are allowed.");
                 await auth.signOut();
                 return;
             }
-
-            const rollNo = email.split("@")[0].split(".")[1].toUpperCase();
-
-            const response = await fetch("https://authenticator-zppp.onrender.com/validate-rollno", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ rollNo }),
-            });
-
-            if (!response.ok) {
-                const data = await response.json();
-                alert(`Access Denied: ${data.message}`);
-                await auth.signOut();
-                return;
-            }
-
+    
             const sessionId = generateSessionId();
-
-            const sessionResponse = await fetch("https://authenticator-zppp.onrender.com/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, sessionId }),
-            });
-
-            if (sessionResponse.status === 403) {
-                alert("You are already logged in on another device. Logout first.");
-                await auth.signOut();
-                return;
-            }
-
-            if (sessionResponse.ok) {
+    
+            try {
+                await login(email, sessionId);
                 localStorage.setItem("email", email);
-                localStorage.setItem("sessionId", sessionId);
+                localStorage.setItem("sessionId", sessionId);               
+                setUser({ email, sessionId });
 
-                setUser(result.user);
                 navigate("/otp");
-            } else {
-                alert("Login failed. Please try again.");
+            } catch (error) {
+                if (error.message.includes("403")) {
+                    alert("You are already logged in on another device. Logout first.");
+                } else {
+                    alert("Login failed. Please try again.");
+                }
+                await auth.signOut();
             }
         } catch (error) {
             console.error("Login failed:", error);
         }
     };
+    
 
     const generateSessionId = () => {
         return Math.random().toString(36).substr(2) + Date.now().toString(36);
     };
 
-    const styles = {
-        container: {
-            textAlign: "center",
-            fontFamily: "Arial, sans-serif",
-            height: "100vh",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            backgroundColor: "#f8f9fa",
-            position: "relative",
-        },
-        logo: {
-            width: "150px",
-            height: "auto",
-            position: "absolute",
-            top: "50px", // Moves the logo further up
-        },
-        image: {
-            width: "300px", // Increased image size
-            height: "auto",
-            marginBottom: "20px",
-        },
-        text: {
-            fontSize: "18px",
-            color: "#555",
-            marginBottom: "40px",
-            textAlign: "center",
-        },
-        button: {
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "transparent",
-            color: "black",
-            fontSize: "16px",
-            fontWeight: "bold",
-            border: "1px solid #ccc",
-            borderRadius: "5px",
-            padding: "10px 20px",
-            cursor: "pointer",
-            boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
-            transition: "background-color 0.3s ease, box-shadow 0.3s ease",
-            marginTop: "80px", // Moved button further down
-        },
-        buttonHover: {
-            backgroundColor: "#f0f0f0",
-            boxShadow: "0px 6px 8px rgba(0, 0, 0, 0.15)",
-        },
-        svgIcon: {
-            width: "20px",
-            height: "20px",
-            marginRight: "10px",
-        },
-    };
-
+    // Rest of the component remains the same (styles and return statement)
     return (
         <div style={styles.container}>
             <img
@@ -172,6 +98,62 @@ const Login = ({ setUser }) => {
             </button>
         </div>
     );
+};
+
+const styles = {
+    container: {
+        textAlign: "center",
+        fontFamily: "Arial, sans-serif",
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#f8f9fa",
+        position: "relative",
+    },
+    logo: {
+        width: "150px",
+        height: "auto",
+        position: "absolute",
+        top: "50px",
+    },
+    image: {
+        width: "300px",
+        height: "auto",
+        marginBottom: "20px",
+    },
+    text: {
+        fontSize: "18px",
+        color: "#555",
+        marginBottom: "40px",
+        textAlign: "center",
+    },
+    button: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "transparent",
+        color: "black",
+        fontSize: "16px",
+        fontWeight: "bold",
+        border: "1px solid #ccc",
+        borderRadius: "5px",
+        padding: "10px 20px",
+        cursor: "pointer",
+        boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+        transition: "background-color 0.3s ease, box-shadow 0.3s ease",
+        marginTop: "80px",
+    },
+    buttonHover: {
+        backgroundColor: "#f0f0f0",
+        boxShadow: "0px 6px 8px rgba(0, 0, 0, 0.15)",
+    },
+    svgIcon: {
+        width: "20px",
+        height: "20px",
+        marginRight: "10px",
+    },
 };
 
 export default Login;

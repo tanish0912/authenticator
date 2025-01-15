@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./components/Login";
 import OTPApp from "./OTPApp";
+import { validateSession } from './api';
+import { auth } from "./firebase";
 import StudentDetails from "./StudentDetails";
 
 function App() {
@@ -9,33 +11,28 @@ function App() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const validateSession = async () => {
-            const email = localStorage.getItem("email");
-            const sessionId = localStorage.getItem("sessionId");
-
-            if (email && sessionId) {
-                try {
-                    const response = await fetch("https://authenticator-zppp.onrender.com/validate-session", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ email, sessionId }),
-                    });
-
-                    if (response.ok) {
-                        setUser({ email, sessionId }); 
-                    } else {
+        const checkSession = () => {
+            auth.onAuthStateChanged(async (currentUser) => {
+                if (currentUser) {
+                    const email = localStorage.getItem("email");
+                    const sessionId = localStorage.getItem("sessionId");
+                    try {
+                        const token = await currentUser.getIdToken();
+                        await validateSession(email, sessionId); // Validate session with token
+                        setUser({ email, sessionId });
+                    } catch (error) {
+                        console.error("Session validation failed:", error);
                         localStorage.removeItem("email");
                         localStorage.removeItem("sessionId");
                     }
-                } catch (error) {
-                    console.error("Error validating session:", error);
+                } else {
+                    console.log("No user is signed in");
                 }
-            }
-
-            setLoading(false);
+                setLoading(false);
+            });
         };
 
-        validateSession();
+        checkSession();
     }, []);
 
     if (loading) {
@@ -60,14 +57,13 @@ function App() {
                     }
                 />
             </Routes>
-            
             <Routes>
-                <Route path="/student-details" element={<StudentDetails />} />
+            <Route path="/student-details" element={<StudentDetails />} />
             </Routes>
-        
         </Router>
-        
     );
 }
 
 export default App;
+
+

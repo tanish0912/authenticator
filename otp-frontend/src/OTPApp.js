@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { getOTP, getIdInformation, logout } from './api';
 
 const OTPApp = ({ user, setUser }) => {
     const [otp, setOtp] = useState("------");
@@ -7,34 +8,24 @@ const OTPApp = ({ user, setUser }) => {
     const [userData, setUserData] = useState(null);
     const intervalRef = useRef(null);
 
-    const fetchUserData = async () => {
+
+
+    const fetchIdInformation = async () => {
         try {
-            const response = await fetch("https://authenticator-zppp.onrender.com/get-user-data", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: user.email }),
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                setUserData(data);
-            } else {
-                console.error("Error fetching user data:", data.message);
-            }
+            const data = await getIdInformation(); // No email passed; handled securely in the backend
+            setUserData(data);
         } catch (error) {
-            console.error("Error fetching user data:", error);
+            console.error("Error fetching ID information:", error);
         }
     };
+    
 
     const fetchOTP = async () => {
         try {
             setOtp("Loading...");
             setStatus("");
 
-            const response = await fetch("https://authenticator-zppp.onrender.com/otp");
-            const data = await response.json();
-
+            const data = await getOTP();
             const otpTimestamp = data.timestamp;
             const serverTime = new Date(otpTimestamp);
             const now = new Date();
@@ -75,7 +66,7 @@ const OTPApp = ({ user, setUser }) => {
     };
 
     useEffect(() => {
-        fetchUserData();
+        fetchIdInformation();
         fetchOTP();
 
         return () => {
@@ -87,21 +78,16 @@ const OTPApp = ({ user, setUser }) => {
 
     const handleLogout = async () => {
         try {
-            await fetch("https://authenticator-zppp.onrender.com/logout", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: user.email }),
-            });
-
+            await logout(user.email);
             localStorage.removeItem("email");
             localStorage.removeItem("sessionId");
-
             setUser(null);
         } catch (error) {
             console.error("Logout failed:", error);
         }
     };
 
+    // Rest of the component remains the same (return statement with JSX and styles)
     return (
         <div className="container">
             <div className="card">
@@ -137,13 +123,14 @@ const OTPApp = ({ user, setUser }) => {
             </div>
 
             <style jsx>{`
+                /* All existing styles remain the same */
                 .container {
                     min-height: 100vh;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     padding: 20px;
-                    background-color: #2563eb; /* Royal blue background from the image */
+                    background-color: #2563eb;
                 }
 
                 .card {
@@ -206,7 +193,7 @@ const OTPApp = ({ user, setUser }) => {
                 .otp-display {
                     font-size: 36px;
                     font-weight: bold;
-                    color: #2563eb; /* Same blue as background */
+                    color: #2563eb;
                     letter-spacing: 2px;
                     margin-bottom: 16px;
                 }
@@ -221,7 +208,7 @@ const OTPApp = ({ user, setUser }) => {
                 .timer-dot {
                     width: 10px;
                     height: 10px;
-                    background-color: #22c55e; /* Green color from the image */
+                    background-color: #22c55e;
                     border-radius: 50%;
                     animation: pulse 1.5s infinite;
                 }
@@ -233,7 +220,7 @@ const OTPApp = ({ user, setUser }) => {
 
                 .timer-seconds {
                     font-size: 18px;
-                    color: #22c55e; /* Green color from the image */
+                    color: #22c55e;
                 }
 
                 .error-message {
@@ -244,7 +231,7 @@ const OTPApp = ({ user, setUser }) => {
 
                 .logout-button {
                     width: 100%;
-                    background-color: #2563eb; /* Same blue as background */
+                    background-color: #2563eb;
                     color: white;
                     border: none;
                     border-radius: 12px;
@@ -256,7 +243,7 @@ const OTPApp = ({ user, setUser }) => {
                 }
 
                 .logout-button:hover {
-                    background-color: #1d4ed8; /* Slightly darker blue */
+                    background-color: #1d4ed8;
                     transform: scale(1.02);
                 }
 

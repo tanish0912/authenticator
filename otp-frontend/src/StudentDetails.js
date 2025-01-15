@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { getUserData } from './api';
 
 const StudentDetails = () => {
     const [email, setEmail] = useState("");
@@ -13,26 +14,15 @@ const StudentDetails = () => {
 
         try {
             setError("");
-            const response = await fetch("https://authenticator-zppp.onrender.com/get-user-data", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email }),
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                setStudentData(data);
-            } else {
-                const errorData = await response.json();
-                setError(errorData.message || "Student not found.");
-                setStudentData(null);
-            }
+            const data = await getUserData(email);
+            setStudentData(data);
         } catch (err) {
             setError("Failed to fetch student data. Please try again.");
             setStudentData(null);
         }
     };
 
+    // Rest of the component remains the same
     return (
         <div style={styles.container}>
             <h2>Search Student Details</h2>
